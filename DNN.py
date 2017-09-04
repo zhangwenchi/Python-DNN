@@ -17,10 +17,10 @@ class addGate:
     def forward(self, b, X):
         return X + b
 
-    def backward(self, X, dZ):
+    def backward(self, dZ):
+        # dZ is 2 * 200, but db we need is 1 * num_of_neural
         db = np.dot(np.ones((1, dZ.shape[0]), dtype=np.float64), dZ)
-        dX = dZ * np.ones_like(X)
-        return db, dX
+        return db, dZ
 
 
 class layer:
@@ -115,7 +115,7 @@ class Model:
             dtanh = output.diff(forward[-1][2], y)
             for i in range(len(forward) - 1, 0, -1):
                 dadd = tanh.backward(forward[i][1], dtanh)
-                db, dmul = add.backward(forward[i][0], dadd)
+                db, dmul = add.backward(dadd)
                 dW, dtanh = mul.backward(self.W[i - 1], forward[i - 1][2], dmul)
 
                 dW += reg_lambda * self.W[i - 1]
